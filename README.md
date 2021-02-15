@@ -1,3 +1,7 @@
+# Purpose
+The purpose of this project is to create a real-time chat with registered users.
+For complete experience clone `https://github.com/c1c4/chatRoom-Backend` and `https://github.com/c1c4/BotChatRoom`
+
 # ChatRoom
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.0.
