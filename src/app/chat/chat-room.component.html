@@ -1,0 +1,13 @@
+<div class="chat-messages">
+  <div class="chat-messages-show-container">
+    <div class="chat-messages-show-list" *ngFor="let message of messages">
+      <label for="userName">
+        {{ message.dateTime }} {{ message.user.userName }}: {{ message.message }}
+      </label>
+    </div>
+  </div>
+  <div class="chat-messages-create-container">
+    <input [formControl]="message" class="chat-messages-create-input" type="text">
+    <button  class="chat-messages-create-button" (click)="sendMessage()"> Send </button>
+  </div>
+</div>

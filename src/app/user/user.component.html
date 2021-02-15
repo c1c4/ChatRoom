@@ -1,0 +1,28 @@
+<form [formGroup]="userForm">
+  <div class="row">
+    <div class="col">
+      <label for="userName">User: </label>
+      <input formControlName="userName" type="text" name="userName" id="userName">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <label for="password">Password: </label>
+      <input formControlName="password" type="password" name="password" id="password">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <label for="password">E-Mail: </label>
+      <input formControlName="email" type="email" name="email" id="email">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <button (click)="signUp()">Sign up</button>
+    </div>
+  </div>
+</form>
