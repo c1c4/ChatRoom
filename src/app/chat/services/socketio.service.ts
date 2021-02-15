@@ -8,11 +8,13 @@ import { environment } from 'src/environments/environment';
 })
 export class SocketioService {
   socket!: Socket;
+  socketBot!: Socket;
 
   constructor() { }
 
   setupSocketConnection(): void {
-    this.socket = io(environment.SOCKET_ENDPOINT), io('http://localhost:5000/myLocalBot');
+    this.socket = io(environment.SOCKET_ENDPOINT);
+    this.socketBot = io('http://localhost:5000/');
   }
 
   sendMessage(message: MessageInput): void {

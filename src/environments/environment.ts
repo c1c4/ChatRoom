@@ -8,6 +8,7 @@ export const environment = {
   SOCKET_ENDPOINT: BASE_URL,
   LOGIN_ENDPOINT: `${BASE_URL}/login`,
   USERS_ENDPOINT: `${BASE_URL}/users`,
+  MESSAGES_ENDPOINT: `${BASE_URL}/messages`
 };
 
 /*

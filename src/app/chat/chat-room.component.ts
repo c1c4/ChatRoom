@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MessageInput, MessageOutput } from '../model/Message';
 import { UserOutput } from '../model/User';
+import { MessagesService } from '../services/messages.service';
 import { SocketioService } from './services/socketio.service';
 
 @Component({
@@ -16,9 +17,13 @@ export class ChatRoomComponent implements OnInit {
 
   message = new FormControl('', Validators.required);
 
-  constructor(private socketService: SocketioService) { }
+  constructor(
+    private socketService: SocketioService,
+    private messageService: MessagesService
+  ) { }
 
   ngOnInit(): void {
+    this.loadLastFifty();
     this.socketService.setupSocketConnection();
     this.retrieveUserFromLocalStorage();
     this.receiveMessage();
@@ -33,6 +38,13 @@ export class ChatRoomComponent implements OnInit {
 
   }
 
+  private loadLastFifty(): void {
+    this.messageService.getLastFifty().subscribe(
+      messagesList => this.messages = messagesList,
+      error => console.log(error)
+    );
+  }
+
   private receiveMessage(): any {
     this.socketService.socket.on('my response', (msgOutput: MessageOutput) => {
       this.messages.push(msgOutput);
@@ -41,7 +53,8 @@ export class ChatRoomComponent implements OnInit {
       }
     });
 
-    this.socketService.socket.on('botResponse', (msgOutput: MessageOutput) => {
+    this.socketService.socketBot.on('botResponse', (msgOutput: MessageOutput) => {
+      console.log(msgOutput);
       this.messages.push(msgOutput);
       if (this.messages.length > 50) {
         this.messages.shift();
@@ -57,6 +70,7 @@ export class ChatRoomComponent implements OnInit {
       };
 
       this.socketService.sendMessage(msg);
+      this.message.setValue(null);
     }
   }
 
