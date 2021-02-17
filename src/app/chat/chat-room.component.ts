@@ -6,6 +6,7 @@ import { MessageInput, MessageOutput } from '../model/Message';
 import { UserOutput } from '../model/User';
 import { MessagesService } from '../services/messages.service';
 import { SocketioService } from './services/socketio.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-chat-room',
@@ -53,12 +54,12 @@ export class ChatRoomComponent implements OnInit {
   private orderMessages(listMessages: MessageOutput[]): MessageOutput[] {
     listMessages.sort(
       (a, b) => {
-        const da = new Date(a.dateTime).getTime();
-        const db = new Date(b.dateTime).getTime();
+        const da = moment(a.dateTime, 'DD/MM/YYYY HH:mm:ss').toDate().getTime();
+        const db = moment(b.dateTime, 'DD/MM/YYYY HH:mm:ss').toDate().getTime();
         if (da === db) {
           return 0;
         }
-        return da > db ? -1 : 1;
+        return da > db ? 1 : -1;
       }
     );
 
@@ -103,8 +104,7 @@ export class ChatRoomComponent implements OnInit {
         }
         const temp = this.orderMessages(this.messages);
         this.messages = temp;
-
-        message.ack();
+        message.nack();
       });
     }
   }
