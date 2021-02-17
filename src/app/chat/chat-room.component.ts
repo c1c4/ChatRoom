@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { environment } from 'src/environments/environment';
-import webstomp from 'webstomp-client';
+import webstomp, { Client } from 'webstomp-client';
 import { MessageInput, MessageOutput } from '../model/Message';
 import { UserOutput } from '../model/User';
 import { MessagesService } from '../services/messages.service';
@@ -18,10 +18,10 @@ export class ChatRoomComponent implements OnInit {
   messages: MessageOutput[] = [];
 
   message = new FormControl('', Validators.required);
-  ws = new  WebSocket(environment.WEBSOCKET_ENDPOINT);
-  client = webstomp.over(this.ws);
   websocketResponseName = 'my response';
   destination = '/queue/stock-queue';
+
+  client!: Client;
 
   constructor(
     private socketService: SocketioService,
@@ -37,6 +37,8 @@ export class ChatRoomComponent implements OnInit {
   }
 
   private connect(): void {
+    const ws = new  WebSocket(environment.WEBSOCKET_ENDPOINT, ['v10.stomp', 'v11.stomp', 'v12.stomp']);
+    this.client = webstomp.over(ws);
     this.client.connect(environment.WEBSOCKET_USER, environment.WEBSOCKET_PASS, _ => this.receiveBotMessage(), () => {
       setTimeout(() => {
         this.connect();
@@ -48,17 +50,19 @@ export class ChatRoomComponent implements OnInit {
     this.messages.shift();
   }
 
-  private orderMessages(): void {
-    this.messages.sort(
+  private orderMessages(listMessages: MessageOutput[]): MessageOutput[] {
+    listMessages.sort(
       (a, b) => {
-        const da = new Date(a.dateTime);
-        const db = new Date(b.dateTime);
+        const da = new Date(a.dateTime).getTime();
+        const db = new Date(b.dateTime).getTime();
         if (da === db) {
           return 0;
         }
-        return da > db ? 1 : -1;
+        return da > db ? -1 : 1;
       }
     );
+
+    return listMessages;
 
   }
 
@@ -84,7 +88,8 @@ export class ChatRoomComponent implements OnInit {
       if (this.messages.length > 50) {
         this.keepOnlyFifty();
       }
-      this.orderMessages();
+      const temp = this.orderMessages(this.messages);
+      this.messages = temp;
     });
   }
 
@@ -96,7 +101,8 @@ export class ChatRoomComponent implements OnInit {
         if (this.messages.length > 50) {
           this.keepOnlyFifty();
         }
-        this.orderMessages();
+        const temp = this.orderMessages(this.messages);
+        this.messages = temp;
 
         message.ack();
       });
