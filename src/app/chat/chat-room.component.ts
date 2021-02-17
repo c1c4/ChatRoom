@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { environment } from 'src/environments/environment';
+import webstomp from 'webstomp-client';
 import { MessageInput, MessageOutput } from '../model/Message';
 import { UserOutput } from '../model/User';
 import { MessagesService } from '../services/messages.service';
@@ -16,6 +18,10 @@ export class ChatRoomComponent implements OnInit {
   messages: MessageOutput[] = [];
 
   message = new FormControl('', Validators.required);
+  ws = new  WebSocket(environment.WEBSOCKET_ENDPOINT);
+  client = webstomp.over(this.ws);
+  websocketResponseName = 'my response';
+  destination = '/queue/stock-queue';
 
   constructor(
     private socketService: SocketioService,
@@ -23,10 +29,37 @@ export class ChatRoomComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.connect();
     this.loadLastFifty();
     this.socketService.setupSocketConnection();
     this.retrieveUserFromLocalStorage();
     this.receiveMessage();
+  }
+
+  private connect(): void {
+    this.client.connect(environment.WEBSOCKET_USER, environment.WEBSOCKET_PASS, _ => this.receiveBotMessage(), () => {
+      setTimeout(() => {
+        this.connect();
+      }, 1000);
+    });
+  }
+
+  private keepOnlyFifty(): void {
+    this.messages.shift();
+  }
+
+  private orderMessages(): void {
+    this.messages.sort(
+      (a, b) => {
+        const da = new Date(a.dateTime);
+        const db = new Date(b.dateTime);
+        if (da === db) {
+          return 0;
+        }
+        return da > db ? 1 : -1;
+      }
+    );
+
   }
 
   private retrieveUserFromLocalStorage(): void {
@@ -46,20 +79,28 @@ export class ChatRoomComponent implements OnInit {
   }
 
   private receiveMessage(): any {
-    this.socketService.socket.on('my response', (msgOutput: MessageOutput) => {
+    this.socketService.socket.on(this.websocketResponseName, (msgOutput: MessageOutput) => {
       this.messages.push(msgOutput);
       if (this.messages.length > 50) {
-        this.messages.shift();
+        this.keepOnlyFifty();
       }
+      this.orderMessages();
     });
+  }
 
-    this.socketService.socketBot.on('botResponse', (msgOutput: MessageOutput) => {
-      console.log(msgOutput);
-      this.messages.push(msgOutput);
-      if (this.messages.length > 50) {
-        this.messages.shift();
-      }
-    });
+  private receiveBotMessage(): any {
+    if (this.client.connected) {
+      this.client.subscribe(this.destination, message => {
+        this.messages.push(JSON.parse(message.body));
+
+        if (this.messages.length > 50) {
+          this.keepOnlyFifty();
+        }
+        this.orderMessages();
+
+        message.ack();
+      });
+    }
   }
 
   sendMessage(): void {

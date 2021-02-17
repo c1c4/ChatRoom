@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { MessageInput } from 'src/app/model/Message';
 import { environment } from 'src/environments/environment';
+import { Client } from 'webstomp-client';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,6 @@ export class SocketioService {
 
   setupSocketConnection(): void {
     this.socket = io(environment.SOCKET_ENDPOINT);
-    this.socketBot = io('http://localhost:5000/');
   }
 
   sendMessage(message: MessageInput): void {

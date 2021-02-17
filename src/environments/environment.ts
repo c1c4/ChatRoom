@@ -8,7 +8,10 @@ export const environment = {
   SOCKET_ENDPOINT: BASE_URL,
   LOGIN_ENDPOINT: `${BASE_URL}/login`,
   USERS_ENDPOINT: `${BASE_URL}/users`,
-  MESSAGES_ENDPOINT: `${BASE_URL}/messages`
+  MESSAGES_ENDPOINT: `${BASE_URL}/messages`,
+  WEBSOCKET_ENDPOINT: 'ws://127.0.0.1:15674/ws',
+  WEBSOCKET_USER: 'guest',
+  WEBSOCKET_PASS: 'guest'
 };
 
 /*
